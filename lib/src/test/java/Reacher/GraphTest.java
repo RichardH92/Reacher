@@ -142,4 +142,20 @@ public class GraphTest {
 	public void testGetAncestorsReturnsEmptyWhenIdBelongsToRoot() {
 		assertTrue(testGraph.getAncestors("A").isEmpty());
 	}
+
+	@Test
+	public void testRemoveNodeRemovesNodeAndEdgesFromGraphCorrectly() {
+		Graph graph = testGraph.toBuilder().build();
+
+		assertFalse(graph.getNode("E").isEmpty());
+		graph.removeNode("E");
+		assertTrue(graph.getNode("E").isEmpty());
+	}
+
+	@Test
+	public void testRemoveNodeThrowsNotFoundExceptionWhenNodeWithIdDNE() {
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.removeNode("DNE"));
+		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
+		assertEquals("DNE", exception.getNodeId());
+	}
 }

@@ -9,6 +9,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Graph implements IGraph {
 
@@ -39,6 +40,11 @@ public class Graph implements IGraph {
 		this.nodeIdToNodes = nodeIdToNodes;
 		this.nodes = nodes;
 		this.edges = edges;
+	}
+
+	@Override
+	public Optional<INode> getNode(String nodeId) {
+		return Optional.ofNullable(nodeIdToNodes.get(nodeId));
 	}
 
 	@Override
