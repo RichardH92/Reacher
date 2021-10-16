@@ -3,6 +3,7 @@ package Reacher;
 import Reacher.domain.INode;
 import Reacher.service.IGraph;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
@@ -16,6 +17,8 @@ public class Graph implements IGraph {
 	private final Map<String, Integer> nodeIdToIntegerIds;
 	private final SimpleMatrix adjacencyMatrix;
 	private final SimpleMatrix reachabilityMatrix;
+	private List<INode> nodes;
+	private Multimap<String, String> edges;
 
 	public Graph(
 			int n,
@@ -23,7 +26,9 @@ public class Graph implements IGraph {
 			Map<String, Integer> nodeIdToIntegerIds,
 			Map<String, INode> nodeIdToNodes,
 			SimpleMatrix adjacencyMatrix,
-			SimpleMatrix reachabilityMatrix) {
+			SimpleMatrix reachabilityMatrix,
+			List<INode> nodes,
+			Multimap<String, String> edges) {
 
 		this.n = n;
 		this.integerIdToNodes = integerIdToNodes;
@@ -31,6 +36,8 @@ public class Graph implements IGraph {
 		this.adjacencyMatrix = adjacencyMatrix;
 		this.reachabilityMatrix = reachabilityMatrix;
 		this.nodeIdToNodes = nodeIdToNodes;
+		this.nodes = nodes;
+		this.edges = edges;
 	}
 
 	@Override
@@ -91,5 +98,13 @@ public class Graph implements IGraph {
 	@Override
 	public void removeEdge(String fromNodeId, String toNodeId) {
 
+	}
+
+	public static GraphBuilder builder() {
+		return new GraphBuilder();
+	}
+
+	public GraphBuilder toBuilder() {
+		return new GraphBuilder(nodes, edges);
 	}
 }

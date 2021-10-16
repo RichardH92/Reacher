@@ -4,6 +4,9 @@ import Reacher.domain.INode;
 import Reacher.utils.GraphUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+
+import java.util.List;
 
 public class GraphBuilder {
 
@@ -13,6 +16,13 @@ public class GraphBuilder {
 	public GraphBuilder() {
 		vertices = ImmutableList.builder();
 		edges = ImmutableMultimap.builder();
+	}
+
+	public GraphBuilder(List<INode> vertices, Multimap<String, String> edges) {
+		super();
+
+		vertices.addAll(vertices);
+		edges.forEach(edges::put);
 	}
 
 	public GraphBuilder addNode(INode node) {
