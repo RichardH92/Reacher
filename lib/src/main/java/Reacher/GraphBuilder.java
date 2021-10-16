@@ -2,6 +2,7 @@ package Reacher;
 
 import Reacher.domain.INode;
 import Reacher.service.GraphMutationService;
+import Reacher.utils.GraphUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -10,6 +11,11 @@ public class GraphBuilder {
 
 	ImmutableList.Builder<INode> vertices;
 	ImmutableMultimap.Builder<String, String> edges;
+
+	public GraphBuilder() {
+		vertices = ImmutableList.builder();
+		edges = ImmutableMultimap.builder();
+	}
 
 	public GraphBuilder addNode(INode node) {
 		vertices.add(node);
@@ -21,5 +27,7 @@ public class GraphBuilder {
 		return this;
 	}
 
-
+	public Graph build() {
+		return GraphUtils.constructGraph(vertices.build(), edges.build());
+	}
 }

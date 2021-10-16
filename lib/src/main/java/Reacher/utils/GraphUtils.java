@@ -2,9 +2,7 @@ package Reacher.utils;
 
 import Reacher.Graph;
 import Reacher.domain.INode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.math3.util.Pair;
 import org.ejml.simple.SimpleMatrix;
@@ -17,15 +15,20 @@ import java.util.stream.Collectors;
 public class GraphUtils {
 
 	public static Graph constructGraph(List<INode> nodes, Multimap<String, String> edges) {
-
 		int n = nodes.size();
 		Map<String, INode> nodeIdToNodeMap = buildNodeIdToNodeMap(nodes);
 		Map<String, Integer> nodeIdToIntegerIds = assignIntegerIdToNodes(nodes);
+		Map<Integer, INode> integerIdToNodeMap = buildIntegerIdToNodeMap(nodes, nodeIdToIntegerIds);
 		SimpleMatrix adjacencyMatrix = constructAdjacencyMatrix(n, edges, nodeIdToIntegerIds);
 		SimpleMatrix identityMatrix = buildIdentityMatrix(n);
 		SimpleMatrix reachabilityMatrix = constructReachabilityMatrix(adjacencyMatrix, identityMatrix);
 
-		return new Graph(nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix);
+		return new Graph(n, integerIdToNodeMap, nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix);
+	}
+
+	private static Map<Integer, INode> buildIntegerIdToNodeMap(List<INode> nodes, Map<String, Integer> nodeIdToIntegerId) {
+		return nodes.stream()
+				.collect(Collectors.toMap(node -> nodeIdToIntegerId.get(node.getId()), Function.identity()));
 	}
 
 	private static Map<String, INode> buildNodeIdToNodeMap(List<INode> nodes) {
