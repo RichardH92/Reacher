@@ -55,7 +55,7 @@ public class Graph implements IGraph {
 	}
 
 	@Override
-	public boolean doesPathExist(String nodeAId, String nodeBId) {
+	public boolean doesPathExist(String fromNodeId, String toNodeId) {
 		return false;
 	}
 

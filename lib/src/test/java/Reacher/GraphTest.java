@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GraphTest {
 
@@ -38,6 +37,47 @@ public class GraphTest {
 		builder.addEdge("D", "E");
 
 		testGraph = builder.build();
+	}
+
+	@Test
+	public void testGetDescendantsHappyPath() {
+		List<INode> descendants = testGraph.getDescendants("B");
+		List<INode> expected = ImmutableList.of(
+				testNodes.get(2),
+				testNodes.get(4)
+		);
+
+		assertEquals(expected, descendants);
+	}
+
+	@Test
+	public void testGetDescendantsDedupesNodesWhenDescendantViaMultiplePaths() {
+		List<INode> descendants = testGraph.getDescendants("A");
+		List<INode> expected = ImmutableList.of(
+				testNodes.get(1),
+				testNodes.get(2),
+				testNodes.get(3),
+				testNodes.get(4)
+		);
+
+		assertEquals(expected, descendants);
+	}
+
+	@Test
+	public void testGetDescendantsReturnsEmptyWhenNodeIsALeaf() {
+		assertTrue(testGraph.getDescendants("E").isEmpty());
+	}
+
+	@Test
+	public void testDoesPathExistHappyPath() {
+		assertTrue(testGraph.doesPathExist("A", "E"));
+		assertTrue(testGraph.doesPathExist("A", "B"));
+		assertTrue(testGraph.doesPathExist("A", "D"));
+
+		assertFalse(testGraph.doesPathExist("E", "A"));
+
+		assertFalse(testGraph.doesPathExist("D", "C"));
+		assertFalse(testGraph.doesPathExist("C", "D"));
 	}
 
 	@Test
