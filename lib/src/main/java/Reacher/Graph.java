@@ -3,13 +3,10 @@ package Reacher;
 import Reacher.domain.INode;
 import Reacher.domain.exceptions.NodeNotFoundException;
 import Reacher.service.IGraph;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Graph implements IGraph {
 
@@ -19,8 +16,7 @@ public class Graph implements IGraph {
 	private final Map<String, Integer> nodeIdToIntegerIds;
 	private final SimpleMatrix adjacencyMatrix;
 	private final SimpleMatrix reachabilityMatrix;
-	private List<INode> nodes;
-	private Multimap<String, String> edges;
+	private Set<Integer> unusuedNodeIds;
 
 	public Graph(
 			int n,
@@ -28,18 +24,15 @@ public class Graph implements IGraph {
 			Map<String, Integer> nodeIdToIntegerIds,
 			Map<String, INode> nodeIdToNodes,
 			SimpleMatrix adjacencyMatrix,
-			SimpleMatrix reachabilityMatrix,
-			List<INode> nodes,
-			Multimap<String, String> edges) {
+			SimpleMatrix reachabilityMatrix) {
 
 		this.n = n;
-		this.integerIdToNodes = integerIdToNodes;
-		this.nodeIdToIntegerIds = nodeIdToIntegerIds;
+		this.integerIdToNodes = new HashMap<>(integerIdToNodes);
+		this.nodeIdToIntegerIds = new HashMap<>(nodeIdToIntegerIds);
 		this.adjacencyMatrix = adjacencyMatrix;
 		this.reachabilityMatrix = reachabilityMatrix;
-		this.nodeIdToNodes = nodeIdToNodes;
-		this.nodes = nodes;
-		this.edges = edges;
+		this.nodeIdToNodes = new HashMap<>(nodeIdToNodes);
+		this.unusuedNodeIds = new HashSet<>();
 	}
 
 	@Override
@@ -108,6 +101,22 @@ public class Graph implements IGraph {
 	@Override
 	public void removeNode(String nodeId) {
 
+		assertNodeExists(nodeId);
+		assertNodeIsALeaf(nodeId);
+
+		int rowId = nodeIdToIntegerIds.get(nodeId);
+		int colId = nodeIdToIntegerIds.get(nodeId);
+
+		reachabilityMatrix.setColumn(colId, 0, 0);
+		reachabilityMatrix.setRow(rowId,0, 0);
+
+		unusuedNodeIds.add(rowId);
+		nodeIdToNodes.remove(nodeId);
+		nodeIdToIntegerIds.remove(nodeId);
+	}
+
+	private void assertNodeIsALeaf(String nodeId) {
+
 	}
 
 	@Override
@@ -125,6 +134,12 @@ public class Graph implements IGraph {
 	}
 
 	public GraphBuilder toBuilder() {
-		return new GraphBuilder(nodes, edges);
+
+		var nodesBuilder = ImmutableList.<INode>builder();
+		var edgesBuilder = ImmutableMultimap.<String, String>builder();
+
+		// TODO: populate builders
+
+		return new GraphBuilder(nodesBuilder.build(), edgesBuilder.build());
 	}
 }

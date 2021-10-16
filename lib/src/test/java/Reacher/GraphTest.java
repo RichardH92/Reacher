@@ -103,11 +103,9 @@ public class GraphTest {
 
 	@Test
 	public void testGetAncestorsThrowsNotFoundExceptionWhenNodePreviouslyExisted() {
+		testGraph.removeNode("E");
 
-		var graph = testGraph.toBuilder().build();
-		graph.removeNode("E");
-
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> graph.getAncestors("E"));
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("E"));
 		assertEquals("Node was not found with the given id: E", exception.getMessage());
 		assertEquals("E", exception.getNodeId());
 	}
@@ -145,11 +143,9 @@ public class GraphTest {
 
 	@Test
 	public void testRemoveNodeRemovesNodeAndEdgesFromGraphCorrectly() {
-		Graph graph = testGraph.toBuilder().build();
-
-		assertFalse(graph.getNode("E").isEmpty());
-		graph.removeNode("E");
-		assertTrue(graph.getNode("E").isEmpty());
+		assertFalse(testGraph.getNode("E").isEmpty());
+		testGraph.removeNode("E");
+		assertTrue(testGraph.getNode("E").isEmpty());
 	}
 
 	@Test

@@ -23,7 +23,7 @@ public class GraphUtils {
 		SimpleMatrix identityMatrix = buildIdentityMatrix(n);
 		SimpleMatrix reachabilityMatrix = constructReachabilityMatrix(adjacencyMatrix, identityMatrix);
 
-		return new Graph(n, integerIdToNodeMap, nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix, nodes, edges);
+		return new Graph(n, integerIdToNodeMap, nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix);
 	}
 
 	private static Map<Integer, INode> buildIntegerIdToNodeMap(List<INode> nodes, Map<String, Integer> nodeIdToIntegerId) {
