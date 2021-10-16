@@ -154,4 +154,9 @@ public class GraphTest {
 		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
 		assertEquals("DNE", exception.getNodeId());
 	}
+
+	@Test
+	public void testRemoveNodeThrowsExceptionWhenNodeIsNotALeaf() {
+		// TODO
+	}
 }
