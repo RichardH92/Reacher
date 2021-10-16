@@ -2,10 +2,29 @@ package Reacher;
 
 import Reacher.domain.INode;
 import Reacher.service.IGraph;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
+import java.util.Map;
 
 public class Graph implements IGraph {
+
+	private Map<String, INode> nodeIdToNodes;
+	private Map<String, Integer> nodeIdToIntegerIds;
+	private SimpleMatrix adjacencyMatrix;
+	private SimpleMatrix reachabilityMatrix;
+
+	public Graph(
+			Map<String, Integer> nodeIdToIntegerIds,
+			Map<String, INode> nodeIdToNodes,
+			SimpleMatrix adjacencyMatrix,
+			SimpleMatrix reachabilityMatrix) {
+
+		this.nodeIdToIntegerIds = nodeIdToIntegerIds;
+		this.adjacencyMatrix = adjacencyMatrix;
+		this.reachabilityMatrix = reachabilityMatrix;
+		this.nodeIdToNodes = nodeIdToNodes;
+	}
 
 	@Override
 	public List<INode> getAncestors(String nodeId) {
