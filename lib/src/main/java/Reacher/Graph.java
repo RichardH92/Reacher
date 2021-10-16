@@ -51,12 +51,26 @@ public class Graph implements IGraph {
 
 	@Override
 	public List<INode> getDescendants(String nodeId) {
-		return null;
+		int rowId = nodeIdToIntegerIds.get(nodeId);
+
+		var nodeListBuilder = ImmutableList.<INode>builder();
+
+		for (int i = 0; i < n; i++) {
+			if (reachabilityMatrix.get(rowId, i) > 0) {
+				INode node = integerIdToNodes.get(i);
+				nodeListBuilder.add(node);
+			}
+		}
+
+		return nodeListBuilder.build();
 	}
 
 	@Override
 	public boolean doesPathExist(String fromNodeId, String toNodeId) {
-		return false;
+		int rowId = nodeIdToIntegerIds.get(fromNodeId);
+		int colId = nodeIdToIntegerIds.get(toNodeId);
+
+		return reachabilityMatrix.get(rowId, colId) >= 1;
 	}
 
 	@Override
