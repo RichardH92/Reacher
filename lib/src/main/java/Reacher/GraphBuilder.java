@@ -19,10 +19,16 @@ public class GraphBuilder {
 	}
 
 	public GraphBuilder(List<INode> vertices, Multimap<String, String> edges) {
-		super();
+		this.vertices = ImmutableList.builder();
+		this.edges = ImmutableMultimap.builder();
 
-		vertices.addAll(vertices);
-		edges.forEach(edges::put);
+		for (var node : vertices) {
+			this.vertices.add(node);
+		}
+
+		for (var edge : edges.entries()) {
+			this.edges.put(edge.getKey(), edge.getValue());
+		}
 	}
 
 	public GraphBuilder addNode(INode node) {

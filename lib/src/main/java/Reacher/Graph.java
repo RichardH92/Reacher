@@ -1,6 +1,7 @@
 package Reacher;
 
 import Reacher.domain.INode;
+import Reacher.domain.exceptions.NodeNotFoundException;
 import Reacher.service.IGraph;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -42,6 +43,8 @@ public class Graph implements IGraph {
 
 	@Override
 	public List<INode> getAncestors(String nodeId) {
+		assertNodeExists(nodeId);
+
 		int colId = nodeIdToIntegerIds.get(nodeId);
 
 		var nodeListBuilder = ImmutableList.<INode>builder();
@@ -58,6 +61,8 @@ public class Graph implements IGraph {
 
 	@Override
 	public List<INode> getDescendants(String nodeId) {
+		assertNodeExists(nodeId);
+
 		int rowId = nodeIdToIntegerIds.get(nodeId);
 
 		var nodeListBuilder = ImmutableList.<INode>builder();
@@ -74,10 +79,19 @@ public class Graph implements IGraph {
 
 	@Override
 	public boolean doesPathExist(String fromNodeId, String toNodeId) {
+		assertNodeExists(fromNodeId);
+		assertNodeExists(toNodeId);
+
 		int rowId = nodeIdToIntegerIds.get(fromNodeId);
 		int colId = nodeIdToIntegerIds.get(toNodeId);
 
 		return reachabilityMatrix.get(rowId, colId) >= 1;
+	}
+
+	private void assertNodeExists(String nodeId) {
+		if (!nodeIdToNodes.containsKey(nodeId)) {
+			throw new NodeNotFoundException(nodeId);
+		}
 	}
 
 	@Override

@@ -69,6 +69,13 @@ public class GraphTest {
 	}
 
 	@Test
+	public void testGetDescendantsThrowsNotFoundExceptionWhenNodeWithIdDNE() {
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("DNE"));
+		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
+		assertEquals("DNE", exception.getNodeId());
+	}
+
+	@Test
 	public void testDoesPathExistHappyPath() {
 		assertTrue(testGraph.doesPathExist("A", "E"));
 		assertTrue(testGraph.doesPathExist("A", "B"));
@@ -89,12 +96,20 @@ public class GraphTest {
 
 	@Test
 	public void testGetAncestorsThrowsNotFoundExceptionWhenNodeWithIdDNE() {
-
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("DNE"));
+		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
+		assertEquals("DNE", exception.getNodeId());
 	}
 
 	@Test
 	public void testGetAncestorsThrowsNotFoundExceptionWhenNodePreviouslyExisted() {
 
+		var graph = testGraph.toBuilder().build();
+		graph.removeNode("E");
+
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> graph.getAncestors("E"));
+		assertEquals("Node was not found with the given id: E", exception.getMessage());
+		assertEquals("E", exception.getNodeId());
 	}
 
 	@Test
