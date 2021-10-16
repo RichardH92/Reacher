@@ -2,8 +2,8 @@ package Reacher;
 
 import Reacher.domain.INode;
 import Reacher.domain.Node;
+import Reacher.domain.exceptions.NodeNotFoundException;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -78,6 +78,23 @@ public class GraphTest {
 
 		assertFalse(testGraph.doesPathExist("D", "C"));
 		assertFalse(testGraph.doesPathExist("C", "D"));
+	}
+
+	@Test
+	public void testDoesPathExistThrowsNotFoundExceptionWhenNodeWithIdDNE() {
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.doesPathExist("DNE", "DNE"));
+		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
+		assertEquals("DNE", exception.getNodeId());
+	}
+
+	@Test
+	public void testGetAncestorsThrowsNotFoundExceptionWhenNodeWithIdDNE() {
+
+	}
+
+	@Test
+	public void testGetAncestorsThrowsNotFoundExceptionWhenNodePreviouslyExisted() {
+
 	}
 
 	@Test

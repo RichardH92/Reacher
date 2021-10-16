@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class Graph implements IGraph {
 
-	private int n;
-	private Map<Integer, INode> integerIdToNodes;
-	private Map<String, INode> nodeIdToNodes;
-	private Map<String, Integer> nodeIdToIntegerIds;
-	private SimpleMatrix adjacencyMatrix;
-	private SimpleMatrix reachabilityMatrix;
+	private final int n;
+	private final Map<Integer, INode> integerIdToNodes;
+	private final Map<String, INode> nodeIdToNodes;
+	private final Map<String, Integer> nodeIdToIntegerIds;
+	private final SimpleMatrix adjacencyMatrix;
+	private final SimpleMatrix reachabilityMatrix;
 
 	public Graph(
 			int n,
