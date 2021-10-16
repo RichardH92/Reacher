@@ -17,6 +17,8 @@ repositories {
 }
 
 dependencies {
+    implementation(group: 'org.ejml', name: 'ejml-all', version: '0.41')
+
     // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
 
