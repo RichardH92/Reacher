@@ -16,7 +16,7 @@ public class Graph implements IGraph {
 	private final Map<String, Integer> nodeIdToIntegerIds;
 	private final SimpleMatrix adjacencyMatrix;
 	private final SimpleMatrix reachabilityMatrix;
-	private Set<Integer> unusuedNodeIds;
+	private Set<Integer> unusedNodeIds;
 
 	public Graph(
 			int n,
@@ -32,7 +32,7 @@ public class Graph implements IGraph {
 		this.adjacencyMatrix = adjacencyMatrix;
 		this.reachabilityMatrix = reachabilityMatrix;
 		this.nodeIdToNodes = new HashMap<>(nodeIdToNodes);
-		this.unusuedNodeIds = new HashSet<>();
+		this.unusedNodeIds = new HashSet<>();
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class Graph implements IGraph {
 		reachabilityMatrix.setColumn(colId, 0, 0);
 		reachabilityMatrix.setRow(rowId,0, 0);
 
-		unusuedNodeIds.add(rowId);
+		unusedNodeIds.add(rowId);
 		nodeIdToNodes.remove(nodeId);
 		nodeIdToIntegerIds.remove(nodeId);
 	}
@@ -119,9 +119,41 @@ public class Graph implements IGraph {
 
 	}
 
+	private void assertEdgeDoesNotExist(String from, String to) {
+
+	}
+
+	private void assertPathDoesNotExist(String from, String to) {
+
+	}
+
 	@Override
 	public void addEdge(String fromNodeId, String toNodeId) {
 
+		assertNodeExists(fromNodeId);
+		assertNodeExists(toNodeId);
+		assertEdgeDoesNotExist(fromNodeId, toNodeId);
+		// check for cycles
+		assertPathDoesNotExist(toNodeId, fromNodeId);
+
+		int fromNodeIntegerId = nodeIdToIntegerIds.get(fromNodeId);
+		int toNodeIntegerId = nodeIdToIntegerIds.get(toNodeId);
+
+		for (INode ancestor : getAncestors(fromNodeId)) {
+			int ancestorRowId = nodeIdToIntegerIds.get(ancestor.getId());
+			for (int i = 0; i < n; i++) {
+				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) + reachabilityMatrix.get(fromNodeIntegerId, i));
+			}
+		}
+
+		for (INode descendant : getDescendants(toNodeId)) {
+			int descendantColId = nodeIdToIntegerIds.get(descendant.getId());
+			for (int i = 0; i < n; i++) {
+				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) + reachabilityMatrix.get(i, toNodeIntegerId));
+			}
+		}
+
+		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) + 1);
 	}
 
 	@Override

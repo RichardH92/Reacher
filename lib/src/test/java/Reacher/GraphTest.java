@@ -159,4 +159,21 @@ public class GraphTest {
 	public void testRemoveNodeThrowsExceptionWhenNodeIsNotALeaf() {
 		// TODO
 	}
+
+	@Test
+	public void testAddEdgeHappyPath() {
+		assertFalse(testGraph.doesPathExist("E", "C"));
+		// check E is not an ancestor of C
+		assertFalse(testGraph.getAncestors("C").stream().map(INode::getId).anyMatch("E"::equals));
+
+		testGraph.addEdge("E", "C");
+
+		assertTrue(testGraph.doesPathExist("E", "C"));
+		assertTrue(testGraph.getAncestors("C").stream().map(INode::getId).anyMatch("E"::equals));
+	}
+
+	@Test
+	public void testAddEdgeWorksCorrectlyWhenNodeIsDisconnected() {
+
+	}
 }
