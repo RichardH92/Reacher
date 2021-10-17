@@ -188,6 +188,19 @@ public class Graph implements IGraph {
 		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) - 1);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Graph graph = (Graph) o;
+		return n == graph.n && Objects.equals(integerIdToNodes, graph.integerIdToNodes) && Objects.equals(nodeIdToNodes, graph.nodeIdToNodes) && Objects.equals(nodeIdToIntegerIds, graph.nodeIdToIntegerIds) && Objects.equals(adjacencyMatrix, graph.adjacencyMatrix) && Objects.equals(reachabilityMatrix, graph.reachabilityMatrix) && Objects.equals(unusedNodeIds, graph.unusedNodeIds);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(n, integerIdToNodes, nodeIdToNodes, nodeIdToIntegerIds, adjacencyMatrix, reachabilityMatrix, unusedNodeIds);
+	}
+
 	public static GraphBuilder builder() {
 		return new GraphBuilder();
 	}
