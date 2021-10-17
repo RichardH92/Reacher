@@ -127,6 +127,10 @@ public class Graph implements IGraph {
 
 	}
 
+	private void assertMultiplePathsExist(String from, String to) {
+
+	}
+
 	@Override
 	public void addEdge(String fromNodeId, String toNodeId) {
 
@@ -142,14 +146,14 @@ public class Graph implements IGraph {
 		for (INode ancestor : getAncestors(fromNodeId)) {
 			int ancestorRowId = nodeIdToIntegerIds.get(ancestor.getId());
 			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) + reachabilityMatrix.get(fromNodeIntegerId, i));
+				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) + reachabilityMatrix.get(toNodeIntegerId, i));
 			}
 		}
 
 		for (INode descendant : getDescendants(toNodeId)) {
 			int descendantColId = nodeIdToIntegerIds.get(descendant.getId());
 			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) + reachabilityMatrix.get(i, toNodeIntegerId));
+				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) + reachabilityMatrix.get(i, fromNodeIntegerId));
 			}
 		}
 
@@ -159,6 +163,29 @@ public class Graph implements IGraph {
 	@Override
 	public void removeEdge(String fromNodeId, String toNodeId) {
 
+		assertNodeExists(fromNodeId);
+		assertNodeExists(toNodeId);
+		// check graph won't become disconnected
+		assertMultiplePathsExist(fromNodeId, toNodeId);
+
+		int fromNodeIntegerId = nodeIdToIntegerIds.get(fromNodeId);
+		int toNodeIntegerId = nodeIdToIntegerIds.get(toNodeId);
+
+		for (INode ancestor : getAncestors(fromNodeId)) {
+			int ancestorRowId = nodeIdToIntegerIds.get(ancestor.getId());
+			for (int i = 0; i < n; i++) {
+				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) - reachabilityMatrix.get(toNodeIntegerId, i));
+			}
+		}
+
+		for (INode descendant : getDescendants(toNodeId)) {
+			int descendantColId = nodeIdToIntegerIds.get(descendant.getId());
+			for (int i = 0; i < n; i++) {
+				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) - reachabilityMatrix.get(i, fromNodeIntegerId));
+			}
+		}
+
+		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) - 1);
 	}
 
 	public static GraphBuilder builder() {
