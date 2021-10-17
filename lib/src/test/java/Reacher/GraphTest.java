@@ -143,9 +143,20 @@ public class GraphTest {
 
 	@Test
 	public void testRemoveNodeRemovesNodeAndEdgesFromGraphCorrectly() {
-		assertFalse(testGraph.getNode("E").isEmpty());
+
+		var builder = new GraphBuilder();
+
+		// add every node except E
+		testNodes.subList(0, testNodes.size() - 1).forEach(builder::addNode);
+
+		builder.addEdge("A", "B");
+		builder.addEdge("B", "C");
+		builder.addEdge("A", "D");
+
+		var expectedGraph = builder.build();
+
 		testGraph.removeNode("E");
-		assertTrue(testGraph.getNode("E").isEmpty());
+		assertEquals(expectedGraph, testGraph);
 	}
 
 	@Test

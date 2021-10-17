@@ -87,6 +87,49 @@ public class Graph implements IGraph {
 		return reachabilityMatrix.get(rowId, colId) >= 1;
 	}
 
+	@Override
+	public List<INode> getNodes() {
+		var builder = ImmutableList.<INode>builder();
+
+		for (int i = 0; i < n; i++) {
+			if (!unusedNodeIds.contains(i)) {
+				builder.add(integerIdToNodes.get(i));
+			}
+		}
+
+		return builder.build();
+	}
+
+	@Override
+	public Multimap<String, String> getEdges() {
+
+		var builder = ImmutableMultimap.<String, String>builder();
+
+		for (int i = 0; i < n; i++) {
+
+			if (unusedNodeIds.contains(i)) {
+				continue;
+			}
+
+			for (int j = 0; j < n; j++) {
+
+				if (unusedNodeIds.contains(j)) {
+					continue;
+				}
+
+				if (adjacencyMatrix.get(i, j) > 0) {
+					var from = integerIdToNodes.get(i);
+					var to = integerIdToNodes.get(j);
+
+					builder.put(from.getId(), to.getId());
+				}
+
+			}
+		}
+
+		return builder.build();
+	}
+
 	private void assertNodeExists(String nodeId) {
 		if (!nodeIdToNodes.containsKey(nodeId)) {
 			throw new NodeNotFoundException(nodeId);
@@ -110,6 +153,7 @@ public class Graph implements IGraph {
 		reachabilityMatrix.setColumn(colId, 0, 0);
 		reachabilityMatrix.setRow(rowId,0, 0);
 
+		// TODO: update adjacency matrix
 		unusedNodeIds.add(rowId);
 		nodeIdToNodes.remove(nodeId);
 		nodeIdToIntegerIds.remove(nodeId);
@@ -193,12 +237,13 @@ public class Graph implements IGraph {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Graph graph = (Graph) o;
-		return n == graph.n && Objects.equals(integerIdToNodes, graph.integerIdToNodes) && Objects.equals(nodeIdToNodes, graph.nodeIdToNodes) && Objects.equals(nodeIdToIntegerIds, graph.nodeIdToIntegerIds) && Objects.equals(adjacencyMatrix, graph.adjacencyMatrix) && Objects.equals(reachabilityMatrix, graph.reachabilityMatrix) && Objects.equals(unusedNodeIds, graph.unusedNodeIds);
+
+		return this.getNodes().equals(graph.getNodes()) && this.getEdges().equals(graph.getEdges());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(n, integerIdToNodes, nodeIdToNodes, nodeIdToIntegerIds, adjacencyMatrix, reachabilityMatrix, unusedNodeIds);
+		return Objects.hash(getEdges(), getNodes());
 	}
 
 	public static GraphBuilder builder() {
@@ -206,12 +251,6 @@ public class Graph implements IGraph {
 	}
 
 	public GraphBuilder toBuilder() {
-
-		var nodesBuilder = ImmutableList.<INode>builder();
-		var edgesBuilder = ImmutableMultimap.<String, String>builder();
-
-		// TODO: populate builders
-
-		return new GraphBuilder(nodesBuilder.build(), edgesBuilder.build());
+		return new GraphBuilder(getNodes(), getEdges());
 	}
 }
