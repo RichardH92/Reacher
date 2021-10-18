@@ -152,8 +152,8 @@ public class Graph implements IGraph {
 
 		reachabilityMatrix.setColumn(colId, 0, 0);
 		reachabilityMatrix.setRow(rowId,0, 0);
-
-		// TODO: update adjacency matrix
+		adjacencyMatrix.setColumn(colId, 0, 0);
+		adjacencyMatrix.setRow(rowId, 0, 0);
 		unusedNodeIds.add(rowId);
 		nodeIdToNodes.remove(nodeId);
 		nodeIdToIntegerIds.remove(nodeId);
