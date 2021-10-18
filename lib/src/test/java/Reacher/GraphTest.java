@@ -173,13 +173,20 @@ public class GraphTest {
 
 	@Test
 	public void testAddEdgeHappyPath() {
-		assertFalse(testGraph.doesPathExist("E", "C"));
-		// check E is not an ancestor of C
-		assertFalse(testGraph.getAncestors("C").stream().map(INode::getId).anyMatch("E"::equals));
 
-		testGraph.addEdge("E", "C");
+		var expectedGraph = testGraph.toBuilder()
+				.addEdge("B", "D")
+				.build();
 
-		assertTrue(testGraph.doesPathExist("E", "C"));
-		assertTrue(testGraph.getAncestors("C").stream().map(INode::getId).anyMatch("E"::equals));
+		assertFalse(testGraph.doesPathExist("B", "D"));
+		// check B is not an ancestor of E
+		assertFalse(testGraph.getAncestors("D").stream().map(INode::getId).anyMatch("B"::equals));
+
+		testGraph.addEdge("B", "D");
+
+		assertTrue(testGraph.doesPathExist("B", "D"));
+		assertTrue(testGraph.getAncestors("D").stream().map(INode::getId).anyMatch("B"::equals));
+
+		assertEquals(expectedGraph, testGraph);
 	}
 }

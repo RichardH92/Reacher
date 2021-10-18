@@ -202,6 +202,7 @@ public class Graph implements IGraph {
 		}
 
 		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) + 1);
+		adjacencyMatrix.set(fromNodeIntegerId, toNodeIntegerId, 1);
 	}
 
 	@Override

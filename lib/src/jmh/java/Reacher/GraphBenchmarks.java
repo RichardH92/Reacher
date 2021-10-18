@@ -26,6 +26,14 @@ public class GraphBenchmarks {
 	}
 
 	@Benchmark
+	public void benchmarkDoesPathExist(BenchmarkState state) {
+		String from = Integer.toString(state.random.nextInt(1000));
+		String to = Integer.toString(state.random.nextInt(1000));
+
+		state.g.doesPathExist(from, to);
+	}
+
+	@Benchmark
 	public void benchmarkGetAncestors(BenchmarkState state) {
 		state.g.getAncestors(Integer.toString(state.random.nextInt(1000)));
 	}
