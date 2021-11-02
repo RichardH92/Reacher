@@ -5,6 +5,7 @@ import Reacher.domain.INode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.math3.util.Pair;
+import org.ejml.data.MatrixType;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
@@ -44,25 +45,25 @@ public class GraphUtils {
 	}
 
 	private static SimpleMatrix buildIdentityMatrix(int n) {
-		double[][] data = new double[n][n];
+		var matrix = new SimpleMatrix(n, n, MatrixType.DSCC);
 
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (j == i) {
-					data[i][j] = 1;
+					matrix.set(i, j, 1);
 				} else {
-					data[i][j] = 0;
+					matrix.set(i, j, 0);
 				}
 			}
 		}
 
-		return new SimpleMatrix(data);
+		return matrix;
 	}
 
 	private static SimpleMatrix constructAdjacencyMatrix(int n, Multimap<Integer, Integer> edges, Map<Integer, Integer> nodeIdToVertexNum) {
 
-		double[][] data = new double[n][n];
-		initializeMatrixToZero(data, n);
+		var matrix = new SimpleMatrix(n, n, MatrixType.DSCC);
+
 		edges.asMap().entrySet().stream()
 				.flatMap(entry -> entry.getValue().stream()
 						.map(val -> Pair.create(entry.getKey(), val))
@@ -70,17 +71,9 @@ public class GraphUtils {
 								nodeIdToVertexNum.get(pair.getKey()),
 								nodeIdToVertexNum.get(pair.getValue())
 						)))
-				.forEach(pair -> data[pair.getKey()][pair.getValue()] = 1);
+				.forEach(pair -> matrix.set(pair.getKey(), pair.getValue(), 1));
 
-		return new SimpleMatrix(data);
-	}
-
-	private static void initializeMatrixToZero(double[][] data, int n) {
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < n; j++) {
-				data[i][j] = 0;
-			}
-		}
+		return matrix;
 	}
 
 	private static Map<Integer, Integer> assignVertexNumToNodes(List<INode> nodes) {

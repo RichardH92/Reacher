@@ -18,7 +18,7 @@ public class GraphBenchmarks {
 		Graph g;
 		Random random;
 
-		@Param({"1000", "5000", "10000", "100000", "1000000"})
+		@Param({"100000", "1000000"})
 		int numVertices;
 
 		@Setup(Level.Trial)
@@ -28,13 +28,13 @@ public class GraphBenchmarks {
 		}
 	}
 
-	/*@Benchmark
+	@Benchmark
 	public void benchmarkDoesPathExist(BenchmarkState state) {
-		String from = Integer.toString(state.random.nextInt(3000));
-		String to = Integer.toString(state.random.nextInt(3000));
+		int from = state.random.nextInt(state.numVertices);
+		int to = state.random.nextInt(state.numVertices);
 
 		state.g.doesPathExist(from, to);
-	}*/
+	}
 
 	@Benchmark
 	public void benchmarkGetAncestors(BenchmarkState state) {
