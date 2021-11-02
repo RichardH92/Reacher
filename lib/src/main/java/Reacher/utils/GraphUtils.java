@@ -45,7 +45,7 @@ public class GraphUtils {
 	}
 
 	private static SimpleMatrix buildIdentityMatrix(int n) {
-		var matrix = new SimpleMatrix(n, n, MatrixType.DSCC);
+		var matrix = new SimpleMatrix(n, n);
 
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
@@ -62,7 +62,8 @@ public class GraphUtils {
 
 	private static SimpleMatrix constructAdjacencyMatrix(int n, Multimap<Integer, Integer> edges, Map<Integer, Integer> nodeIdToVertexNum) {
 
-		var matrix = new SimpleMatrix(n, n, MatrixType.DSCC);
+		var matrix = new SimpleMatrix(n, n);
+		matrix.fill(0);
 
 		edges.asMap().entrySet().stream()
 				.flatMap(entry -> entry.getValue().stream()

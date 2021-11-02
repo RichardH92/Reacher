@@ -44,7 +44,7 @@ public class Graph implements IGraph {
 		this.reachabilityMatrix = reachabilityMatrix;
 		this.nodeIdToNode = new HashMap<>(nodeIdToNode);
 		this.unusedVertexNums = new HashSet<>();
-		readWriteLock = new ReentrantReadWriteLock();
+		this.readWriteLock = new ReentrantReadWriteLock();
 	}
 
 	@Override
@@ -55,103 +55,118 @@ public class Graph implements IGraph {
 	@Override
 	public List<INode> getAncestors(int nodeId) {
 		readWriteLock.readLock().lock();
-		assertNodeExists(nodeId);
+		try {
+			assertNodeExists(nodeId);
 
-		int colId = nodeIdToVertexNum.get(nodeId);
+			int colId = nodeIdToVertexNum.get(nodeId);
 
-		var nodeListBuilder = ImmutableList.<INode>builder();
+			var nodeListBuilder = ImmutableList.<INode>builder();
 
-		for (int i = 0; i < n; i++) {
-			if (reachabilityMatrix.get(i, colId) > 0) {
-				INode node = vertexNumToNode.get(i);
-				nodeListBuilder.add(node);
+			for (int i = 0; i < n; i++) {
+				if (reachabilityMatrix.get(i, colId) > 0) {
+					INode node = vertexNumToNode.get(i);
+					nodeListBuilder.add(node);
+				}
 			}
-		}
 
-		readWriteLock.readLock().unlock();
-		return nodeListBuilder.build();
+			return nodeListBuilder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public List<INode> getDescendants(int nodeId) {
 		readWriteLock.readLock().lock();
-		assertNodeExists(nodeId);
+		try {
+			assertNodeExists(nodeId);
 
-		int rowId = nodeIdToVertexNum.get(nodeId);
+			int rowId = nodeIdToVertexNum.get(nodeId);
 
-		var nodeListBuilder = ImmutableList.<INode>builder();
+			var nodeListBuilder = ImmutableList.<INode>builder();
 
-		for (int i = 0; i < n; i++) {
-			if (reachabilityMatrix.get(rowId, i) > 0) {
-				INode node = vertexNumToNode.get(i);
-				nodeListBuilder.add(node);
+			for (int i = 0; i < n; i++) {
+				if (reachabilityMatrix.get(rowId, i) > 0) {
+					INode node = vertexNumToNode.get(i);
+					nodeListBuilder.add(node);
+				}
 			}
-		}
 
-		readWriteLock.readLock().unlock();
-		return nodeListBuilder.build();
+			return nodeListBuilder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public boolean doesPathExist(int fromNodeId, int toNodeId) {
 		readWriteLock.readLock().lock();
-		assertNodeExists(fromNodeId);
-		assertNodeExists(toNodeId);
+		try {
+			assertNodeExists(fromNodeId);
+			assertNodeExists(toNodeId);
 
-		int rowId = nodeIdToVertexNum.get(fromNodeId);
-		int colId = nodeIdToVertexNum.get(toNodeId);
+			int rowId = nodeIdToVertexNum.get(fromNodeId);
+			int colId = nodeIdToVertexNum.get(toNodeId);
 
-		var result = reachabilityMatrix.get(rowId, colId) >= 1;
-		
-		readWriteLock.readLock().unlock();
-		return result;
+			var result = reachabilityMatrix.get(rowId, colId) >= 1;
+
+			return result;
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public List<INode> getNodes() {
 		readWriteLock.readLock().lock();
-		var builder = ImmutableList.<INode>builder();
+		try {
+			var builder = ImmutableList.<INode>builder();
 
-		for (int i = 0; i < n; i++) {
-			if (!unusedVertexNums.contains(i)) {
-				builder.add(vertexNumToNode.get(i));
+			for (int i = 0; i < n; i++) {
+				if (!unusedVertexNums.contains(i)) {
+					builder.add(vertexNumToNode.get(i));
+				}
 			}
-		}
 
-		readWriteLock.readLock().unlock();
-		return builder.build();
+			return builder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public Multimap<Integer, Integer> getEdges() {
 		readWriteLock.readLock().lock();
 
-		var builder = ImmutableMultimap.<Integer, Integer>builder();
+		try {
+			var builder = ImmutableMultimap.<Integer, Integer>builder();
 
-		for (int i = 0; i < n; i++) {
+			for (int i = 0; i < n; i++) {
 
-			if (unusedVertexNums.contains(i)) {
-				continue;
-			}
-
-			for (int j = 0; j < n; j++) {
-
-				if (unusedVertexNums.contains(j)) {
+				if (unusedVertexNums.contains(i)) {
 					continue;
 				}
 
-				if (adjacencyMatrix.get(i, j) > 0) {
-					var from = vertexNumToNode.get(i);
-					var to = vertexNumToNode.get(j);
+				for (int j = 0; j < n; j++) {
 
-					builder.put(from.getId(), to.getId());
+					if (unusedVertexNums.contains(j)) {
+						continue;
+					}
+
+					if (adjacencyMatrix.get(i, j) > 0) {
+						var from = vertexNumToNode.get(i);
+						var to = vertexNumToNode.get(j);
+
+						builder.put(from.getId(), to.getId());
+					}
+
 				}
-
 			}
-		}
 
-		readWriteLock.readLock().unlock();
-		return builder.build();
+			return builder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	private void assertNodeExists(int nodeId) {
@@ -168,22 +183,24 @@ public class Graph implements IGraph {
 	@Override
 	public void removeNode(int nodeId) {
 		readWriteLock.writeLock().lock();
+		try {
+			assertNodeExists(nodeId);
+			assertNodeIsALeaf(nodeId);
 
-		assertNodeExists(nodeId);
-		assertNodeIsALeaf(nodeId);
+			int rowId = nodeIdToVertexNum.get(nodeId);
+			int colId = nodeIdToVertexNum.get(nodeId);
 
-		int rowId = nodeIdToVertexNum.get(nodeId);
-		int colId = nodeIdToVertexNum.get(nodeId);
+			reachabilityMatrix.setColumn(colId, 0, 0);
+			reachabilityMatrix.setRow(rowId, 0, 0);
+			adjacencyMatrix.setColumn(colId, 0, 0);
+			adjacencyMatrix.setRow(rowId, 0, 0);
+			unusedVertexNums.add(rowId);
+			nodeIdToNode.remove(nodeId);
+			nodeIdToVertexNum.remove(nodeId);
 
-		reachabilityMatrix.setColumn(colId, 0, 0);
-		reachabilityMatrix.setRow(rowId,0, 0);
-		adjacencyMatrix.setColumn(colId, 0, 0);
-		adjacencyMatrix.setRow(rowId, 0, 0);
-		unusedVertexNums.add(rowId);
-		nodeIdToNode.remove(nodeId);
-		nodeIdToVertexNum.remove(nodeId);
-		
-		readWriteLock.writeLock().unlock();
+		} finally {
+			readWriteLock.writeLock().unlock();
+		}
 	}
 
 	private void assertNodeIsALeaf(int nodeId) {
@@ -205,65 +222,72 @@ public class Graph implements IGraph {
 	@Override
 	public void addEdge(int fromNodeId, int toNodeId) {
 		readWriteLock.writeLock().lock();
+		try {
 
-		assertNodeExists(fromNodeId);
-		assertNodeExists(toNodeId);
-		assertEdgeDoesNotExist(fromNodeId, toNodeId);
-		// check for cycles
-		assertPathDoesNotExist(toNodeId, fromNodeId);
+			assertNodeExists(fromNodeId);
+			assertNodeExists(toNodeId);
+			assertEdgeDoesNotExist(fromNodeId, toNodeId);
+			// check for cycles
+			assertPathDoesNotExist(toNodeId, fromNodeId);
 
-		int fromNodeIntegerId = nodeIdToVertexNum.get(fromNodeId);
-		int toNodeIntegerId = nodeIdToVertexNum.get(toNodeId);
+			int fromNodeIntegerId = nodeIdToVertexNum.get(fromNodeId);
+			int toNodeIntegerId = nodeIdToVertexNum.get(toNodeId);
 
-		for (INode ancestor : getAncestors(fromNodeId)) {
-			int ancestorRowId = nodeIdToVertexNum.get(ancestor.getId());
-			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) + reachabilityMatrix.get(toNodeIntegerId, i));
+			for (INode ancestor : getAncestors(fromNodeId)) {
+				int ancestorRowId = nodeIdToVertexNum.get(ancestor.getId());
+				for (int i = 0; i < n; i++) {
+					reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) + reachabilityMatrix.get(toNodeIntegerId, i));
+				}
 			}
-		}
 
-		for (INode descendant : getDescendants(toNodeId)) {
-			int descendantColId = nodeIdToVertexNum.get(descendant.getId());
-			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) + reachabilityMatrix.get(i, fromNodeIntegerId));
+			for (INode descendant : getDescendants(toNodeId)) {
+				int descendantColId = nodeIdToVertexNum.get(descendant.getId());
+				for (int i = 0; i < n; i++) {
+					reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) + reachabilityMatrix.get(i, fromNodeIntegerId));
+				}
 			}
-		}
 
-		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) + 1);
-		adjacencyMatrix.set(fromNodeIntegerId, toNodeIntegerId, 1);
-		
-		readWriteLock.writeLock().unlock();
+			reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) + 1);
+			adjacencyMatrix.set(fromNodeIntegerId, toNodeIntegerId, 1);
+
+		} finally {
+			readWriteLock.writeLock().unlock();
+		}
 	}
 
 	@Override
 	public void removeEdge(int fromNodeId, int toNodeId) {
 		readWriteLock.writeLock().lock();
 
-		assertNodeExists(fromNodeId);
-		assertNodeExists(toNodeId);
-		// check graph won't become disconnected
-		assertMultiplePathsExist(fromNodeId, toNodeId);
+		try {
 
-		int fromNodeIntegerId = nodeIdToVertexNum.get(fromNodeId);
-		int toNodeIntegerId = nodeIdToVertexNum.get(toNodeId);
+			assertNodeExists(fromNodeId);
+			assertNodeExists(toNodeId);
+			// check graph won't become disconnected
+			assertMultiplePathsExist(fromNodeId, toNodeId);
 
-		for (INode ancestor : getAncestors(fromNodeId)) {
-			int ancestorRowId = nodeIdToVertexNum.get(ancestor.getId());
-			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) - reachabilityMatrix.get(toNodeIntegerId, i));
+			int fromNodeIntegerId = nodeIdToVertexNum.get(fromNodeId);
+			int toNodeIntegerId = nodeIdToVertexNum.get(toNodeId);
+
+			for (INode ancestor : getAncestors(fromNodeId)) {
+				int ancestorRowId = nodeIdToVertexNum.get(ancestor.getId());
+				for (int i = 0; i < n; i++) {
+					reachabilityMatrix.set(ancestorRowId, i, reachabilityMatrix.get(ancestorRowId, i) - reachabilityMatrix.get(toNodeIntegerId, i));
+				}
 			}
-		}
 
-		for (INode descendant : getDescendants(toNodeId)) {
-			int descendantColId = nodeIdToVertexNum.get(descendant.getId());
-			for (int i = 0; i < n; i++) {
-				reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) - reachabilityMatrix.get(i, fromNodeIntegerId));
+			for (INode descendant : getDescendants(toNodeId)) {
+				int descendantColId = nodeIdToVertexNum.get(descendant.getId());
+				for (int i = 0; i < n; i++) {
+					reachabilityMatrix.set(i, descendantColId, reachabilityMatrix.get(i, descendantColId) - reachabilityMatrix.get(i, fromNodeIntegerId));
+				}
 			}
-		}
 
-		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) - 1);
-		
-		readWriteLock.writeLock().unlock();
+			reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) - 1);
+
+		} finally {
+			readWriteLock.writeLock().unlock();
+		}
 	}
 
 	@Override
