@@ -3,20 +3,31 @@ package Reacher;
 import Reacher.domain.INode;
 import Reacher.domain.exceptions.NodeNotFoundException;
 import Reacher.service.IGraph;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Graph implements IGraph {
 
+	private final ReadWriteLock readWriteLock;
 	private final int n;
 	private final Map<Integer, INode> vertexNumToNode;
 	private final Map<Integer, INode> nodeIdToNode;
 	private final Map<Integer, Integer> nodeIdToVertexNum;
 	private final SimpleMatrix adjacencyMatrix;
 	private final SimpleMatrix reachabilityMatrix;
-	private Set<Integer> unusedVertexNums;
+	private final Set<Integer> unusedVertexNums;
 
 	public Graph(
 			int n,
@@ -33,6 +44,7 @@ public class Graph implements IGraph {
 		this.reachabilityMatrix = reachabilityMatrix;
 		this.nodeIdToNode = new HashMap<>(nodeIdToNode);
 		this.unusedVertexNums = new HashSet<>();
+		readWriteLock = new ReentrantReadWriteLock();
 	}
 
 	@Override
@@ -42,6 +54,7 @@ public class Graph implements IGraph {
 
 	@Override
 	public List<INode> getAncestors(int nodeId) {
+		readWriteLock.readLock().lock();
 		assertNodeExists(nodeId);
 
 		int colId = nodeIdToVertexNum.get(nodeId);
@@ -55,11 +68,13 @@ public class Graph implements IGraph {
 			}
 		}
 
+		readWriteLock.readLock().unlock();
 		return nodeListBuilder.build();
 	}
 
 	@Override
 	public List<INode> getDescendants(int nodeId) {
+		readWriteLock.readLock().lock();
 		assertNodeExists(nodeId);
 
 		int rowId = nodeIdToVertexNum.get(nodeId);
@@ -73,22 +88,28 @@ public class Graph implements IGraph {
 			}
 		}
 
+		readWriteLock.readLock().unlock();
 		return nodeListBuilder.build();
 	}
 
 	@Override
 	public boolean doesPathExist(int fromNodeId, int toNodeId) {
+		readWriteLock.readLock().lock();
 		assertNodeExists(fromNodeId);
 		assertNodeExists(toNodeId);
 
 		int rowId = nodeIdToVertexNum.get(fromNodeId);
 		int colId = nodeIdToVertexNum.get(toNodeId);
 
-		return reachabilityMatrix.get(rowId, colId) >= 1;
+		var result = reachabilityMatrix.get(rowId, colId) >= 1;
+		
+		readWriteLock.readLock().unlock();
+		return result;
 	}
 
 	@Override
 	public List<INode> getNodes() {
+		readWriteLock.readLock().lock();
 		var builder = ImmutableList.<INode>builder();
 
 		for (int i = 0; i < n; i++) {
@@ -97,11 +118,13 @@ public class Graph implements IGraph {
 			}
 		}
 
+		readWriteLock.readLock().unlock();
 		return builder.build();
 	}
 
 	@Override
 	public Multimap<Integer, Integer> getEdges() {
+		readWriteLock.readLock().lock();
 
 		var builder = ImmutableMultimap.<Integer, Integer>builder();
 
@@ -127,6 +150,7 @@ public class Graph implements IGraph {
 			}
 		}
 
+		readWriteLock.readLock().unlock();
 		return builder.build();
 	}
 
@@ -143,6 +167,7 @@ public class Graph implements IGraph {
 
 	@Override
 	public void removeNode(int nodeId) {
+		readWriteLock.writeLock().lock();
 
 		assertNodeExists(nodeId);
 		assertNodeIsALeaf(nodeId);
@@ -157,6 +182,8 @@ public class Graph implements IGraph {
 		unusedVertexNums.add(rowId);
 		nodeIdToNode.remove(nodeId);
 		nodeIdToVertexNum.remove(nodeId);
+		
+		readWriteLock.writeLock().unlock();
 	}
 
 	private void assertNodeIsALeaf(int nodeId) {
@@ -177,6 +204,7 @@ public class Graph implements IGraph {
 
 	@Override
 	public void addEdge(int fromNodeId, int toNodeId) {
+		readWriteLock.writeLock().lock();
 
 		assertNodeExists(fromNodeId);
 		assertNodeExists(toNodeId);
@@ -203,10 +231,13 @@ public class Graph implements IGraph {
 
 		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) + 1);
 		adjacencyMatrix.set(fromNodeIntegerId, toNodeIntegerId, 1);
+		
+		readWriteLock.writeLock().unlock();
 	}
 
 	@Override
 	public void removeEdge(int fromNodeId, int toNodeId) {
+		readWriteLock.writeLock().lock();
 
 		assertNodeExists(fromNodeId);
 		assertNodeExists(toNodeId);
@@ -231,6 +262,8 @@ public class Graph implements IGraph {
 		}
 
 		reachabilityMatrix.set(fromNodeIntegerId, toNodeIntegerId, reachabilityMatrix.get(fromNodeIntegerId, toNodeIntegerId) - 1);
+		
+		readWriteLock.writeLock().unlock();
 	}
 
 	@Override
