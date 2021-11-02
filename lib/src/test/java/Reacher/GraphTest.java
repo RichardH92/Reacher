@@ -19,29 +19,29 @@ public class GraphTest {
 	@BeforeEach
 	public void setup() {
 		testNodes = ImmutableList.of(
-				new Node("A"),
-				new Node("B"),
-				new Node("C"),
-				new Node("D"),
-				new Node("E")
+				new Node(1),
+				new Node(2),
+				new Node(3),
+				new Node(4),
+				new Node(5)
 		);
 
 		var builder = new GraphBuilder();
 
 		testNodes.forEach(builder::addNode);
 
-		builder.addEdge("A", "B");
-		builder.addEdge("B", "C");
-		builder.addEdge("A", "D");
-		builder.addEdge("C", "E");
-		builder.addEdge("D", "E");
+		builder.addEdge(1, 2);
+		builder.addEdge(2, 3);
+		builder.addEdge(1, 4);
+		builder.addEdge(3, 5);
+		builder.addEdge(4, 5);
 
 		testGraph = builder.build();
 	}
 
 	@Test
 	public void testGetDescendantsHappyPath() {
-		List<INode> descendants = testGraph.getDescendants("B");
+		List<INode> descendants = testGraph.getDescendants(2);
 		List<INode> expected = ImmutableList.of(
 				testNodes.get(2),
 				testNodes.get(4)
@@ -52,7 +52,7 @@ public class GraphTest {
 
 	@Test
 	public void testGetDescendantsDedupesNodesWhenDescendantViaMultiplePaths() {
-		List<INode> descendants = testGraph.getDescendants("A");
+		List<INode> descendants = testGraph.getDescendants(1);
 		List<INode> expected = ImmutableList.of(
 				testNodes.get(1),
 				testNodes.get(2),
@@ -65,54 +65,54 @@ public class GraphTest {
 
 	@Test
 	public void testGetDescendantsReturnsEmptyWhenNodeIsALeaf() {
-		assertTrue(testGraph.getDescendants("E").isEmpty());
+		assertTrue(testGraph.getDescendants(5).isEmpty());
 	}
 
 	@Test
 	public void testGetDescendantsThrowsNotFoundExceptionWhenNodeWithIdDNE() {
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("DNE"));
-		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
-		assertEquals("DNE", exception.getNodeId());
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors(1000));
+		assertEquals("Node was not found with the given id: 1000", exception.getMessage());
+		assertEquals(1000, exception.getNodeId());
 	}
 
 	@Test
 	public void testDoesPathExistHappyPath() {
-		assertTrue(testGraph.doesPathExist("A", "E"));
-		assertTrue(testGraph.doesPathExist("A", "B"));
-		assertTrue(testGraph.doesPathExist("A", "D"));
+		assertTrue(testGraph.doesPathExist(1, 5));
+		assertTrue(testGraph.doesPathExist(1, 2));
+		assertTrue(testGraph.doesPathExist(1, 4));
 
-		assertFalse(testGraph.doesPathExist("E", "A"));
+		assertFalse(testGraph.doesPathExist(5, 1));
 
-		assertFalse(testGraph.doesPathExist("D", "C"));
-		assertFalse(testGraph.doesPathExist("C", "D"));
+		assertFalse(testGraph.doesPathExist(4, 3));
+		assertFalse(testGraph.doesPathExist(3, 4));
 	}
 
 	@Test
 	public void testDoesPathExistThrowsNotFoundExceptionWhenNodeWithIdDNE() {
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.doesPathExist("DNE", "DNE"));
-		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
-		assertEquals("DNE", exception.getNodeId());
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.doesPathExist(1000, 1000));
+		assertEquals("Node was not found with the given id: 1000", exception.getMessage());
+		assertEquals(1000, exception.getNodeId());
 	}
 
 	@Test
 	public void testGetAncestorsThrowsNotFoundExceptionWhenNodeWithIdDNE() {
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("DNE"));
-		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
-		assertEquals("DNE", exception.getNodeId());
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors(1000));
+		assertEquals("Node was not found with the given id: 1000", exception.getMessage());
+		assertEquals(1000, exception.getNodeId());
 	}
 
 	@Test
 	public void testGetAncestorsThrowsNotFoundExceptionWhenNodePreviouslyExisted() {
-		testGraph.removeNode("E");
+		testGraph.removeNode(5);
 
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors("E"));
-		assertEquals("Node was not found with the given id: E", exception.getMessage());
-		assertEquals("E", exception.getNodeId());
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.getAncestors(5));
+		assertEquals("Node was not found with the given id: 5", exception.getMessage());
+		assertEquals(5, exception.getNodeId());
 	}
 
 	@Test
 	public void testGetAncestorsReturnsCorrectlyHappyPath() {
-		List<INode> ancestors = testGraph.getAncestors("C");
+		List<INode> ancestors = testGraph.getAncestors(3);
 
 		List<INode> expected = ImmutableList.of(
 				testNodes.get(0),
@@ -124,7 +124,7 @@ public class GraphTest {
 
 	@Test
 	public void testGetAncestorsDedupesWhenNodeIsAncestorViaMultiplePaths() {
-		List<INode> ancestors = testGraph.getAncestors("E");
+		List<INode> ancestors = testGraph.getAncestors(5);
 
 		List<INode> expected = ImmutableList.of(
 				testNodes.get(0),
@@ -138,7 +138,7 @@ public class GraphTest {
 
 	@Test
 	public void testGetAncestorsReturnsEmptyWhenIdBelongsToRoot() {
-		assertTrue(testGraph.getAncestors("A").isEmpty());
+		assertTrue(testGraph.getAncestors(1).isEmpty());
 	}
 
 	@Test
@@ -149,21 +149,21 @@ public class GraphTest {
 		// add every node except E
 		testNodes.subList(0, testNodes.size() - 1).forEach(builder::addNode);
 
-		builder.addEdge("A", "B");
-		builder.addEdge("B", "C");
-		builder.addEdge("A", "D");
+		builder.addEdge(1, 2);
+		builder.addEdge(2, 3);
+		builder.addEdge(1, 4);
 
 		var expectedGraph = builder.build();
 
-		testGraph.removeNode("E");
+		testGraph.removeNode(5);
 		assertEquals(expectedGraph, testGraph);
 	}
 
 	@Test
 	public void testRemoveNodeThrowsNotFoundExceptionWhenNodeWithIdDNE() {
-		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.removeNode("DNE"));
-		assertEquals("Node was not found with the given id: DNE", exception.getMessage());
-		assertEquals("DNE", exception.getNodeId());
+		NodeNotFoundException exception = assertThrows(NodeNotFoundException.class, () -> testGraph.removeNode(1000));
+		assertEquals("Node was not found with the given id: 1000", exception.getMessage());
+		assertEquals(1000, exception.getNodeId());
 	}
 
 	@Test
@@ -175,17 +175,17 @@ public class GraphTest {
 	public void testAddEdgeHappyPath() {
 
 		var expectedGraph = testGraph.toBuilder()
-				.addEdge("B", "D")
+				.addEdge(2, 4)
 				.build();
 
-		assertFalse(testGraph.doesPathExist("B", "D"));
+		assertFalse(testGraph.doesPathExist(2, 4));
 		// check B is not an ancestor of E
-		assertFalse(testGraph.getAncestors("D").stream().map(INode::getId).anyMatch("B"::equals));
+		assertFalse(testGraph.getAncestors(4).stream().map(INode::getId).anyMatch(id -> id == 2));
 
-		testGraph.addEdge("B", "D");
+		testGraph.addEdge(2, 4);
 
-		assertTrue(testGraph.doesPathExist("B", "D"));
-		assertTrue(testGraph.getAncestors("D").stream().map(INode::getId).anyMatch("B"::equals));
+		assertTrue(testGraph.doesPathExist(2, 4));
+		assertTrue(testGraph.getAncestors(4).stream().map(INode::getId).anyMatch(id -> id == 2));
 
 		assertEquals(expectedGraph, testGraph);
 	}

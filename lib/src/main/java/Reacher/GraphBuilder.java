@@ -11,14 +11,14 @@ import java.util.List;
 public class GraphBuilder {
 
 	ImmutableList.Builder<INode> vertices;
-	ImmutableMultimap.Builder<String, String> edges;
+	ImmutableMultimap.Builder<Integer, Integer> edges;
 
 	public GraphBuilder() {
 		vertices = ImmutableList.builder();
 		edges = ImmutableMultimap.builder();
 	}
 
-	public GraphBuilder(List<INode> vertices, Multimap<String, String> edges) {
+	public GraphBuilder(List<INode> vertices, Multimap<Integer, Integer> edges) {
 		this.vertices = ImmutableList.builder();
 		this.edges = ImmutableMultimap.builder();
 
@@ -36,7 +36,7 @@ public class GraphBuilder {
 		return this;
 	}
 
-	public GraphBuilder addEdge(String fromNodeId, String toNodeId) {
+	public GraphBuilder addEdge(int fromNodeId, int toNodeId) {
 		edges.put(fromNodeId, toNodeId);
 		return this;
 	}

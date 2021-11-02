@@ -18,7 +18,7 @@ public class GraphBenchmarks {
 		Graph g;
 		Random random;
 
-		@Param({"1000", "5000", "10000"})
+		@Param({"1000", "5000", "10000", "100000", "1000000"})
 		int numVertices;
 
 		@Setup(Level.Trial)
@@ -38,6 +38,6 @@ public class GraphBenchmarks {
 
 	@Benchmark
 	public void benchmarkGetAncestors(BenchmarkState state) {
-		state.g.getAncestors(Integer.toString(state.random.nextInt(state.numVertices)));
+		state.g.getAncestors(state.random.nextInt(state.numVertices));
 	}
 }

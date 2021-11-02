@@ -4,7 +4,7 @@ import Reacher.domain.INode;
 
 public interface GraphMutationService {
 	void addNode(INode node);
-	void removeNode(String nodeId);
-	void addEdge(String fromNodeId, String toNodeId);
-	void removeEdge(String fromNodeId, String toNodeId);
+	void removeNode(int nodeId);
+	void addEdge(int fromNodeId, int toNodeId);
+	void removeEdge(int fromNodeId, int toNodeId);
 }

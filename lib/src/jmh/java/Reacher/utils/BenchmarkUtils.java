@@ -3,7 +3,6 @@ package Reacher.utils;
 import Reacher.Graph;
 import Reacher.domain.INode;
 import Reacher.domain.Node;
-import org.apache.commons.math3.util.Pair;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -34,7 +33,7 @@ public class BenchmarkUtils {
 
 		INode[] vertices = new INode[V];
 		for (int i = 0; i < V; i++) {
-			vertices[i] = new Node(Integer.toString(i));
+			vertices[i] = new Node(i);
 			graphBuilder.addNode(vertices[i]);
 		}
 
@@ -52,7 +51,7 @@ public class BenchmarkUtils {
 			INode from = vertices[v];
 			INode to = vertices[w];
 
-			String e = from.getId() + to.getId();
+			String e = String.valueOf(from.getId()) + "," + String.valueOf(to.getId());
 			if ((v < w) && !set.contains(e)) {
 				set.add(e);
 

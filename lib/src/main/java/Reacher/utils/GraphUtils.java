@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 
 public class GraphUtils {
 
-	public static Graph constructGraph(List<INode> nodes, Multimap<String, String> edges) {
+	public static Graph constructGraph(List<INode> nodes, Multimap<Integer, Integer> edges) {
 		int n = nodes.size();
-		Map<String, INode> nodeIdToNodeMap = buildNodeIdToNodeMap(nodes);
-		Map<String, Integer> nodeIdToIntegerIds = assignIntegerIdToNodes(nodes);
+		Map<Integer, INode> nodeIdToNodeMap = buildNodeIdToNodeMap(nodes);
+		Map<Integer, Integer> nodeIdToIntegerIds = assignVertexNumToNodes(nodes);
 		Map<Integer, INode> integerIdToNodeMap = buildIntegerIdToNodeMap(nodes, nodeIdToIntegerIds);
 		SimpleMatrix adjacencyMatrix = constructAdjacencyMatrix(n, edges, nodeIdToIntegerIds);
 		SimpleMatrix identityMatrix = buildIdentityMatrix(n);
@@ -26,12 +26,12 @@ public class GraphUtils {
 		return new Graph(n, integerIdToNodeMap, nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix);
 	}
 
-	private static Map<Integer, INode> buildIntegerIdToNodeMap(List<INode> nodes, Map<String, Integer> nodeIdToIntegerId) {
+	private static Map<Integer, INode> buildIntegerIdToNodeMap(List<INode> nodes, Map<Integer, Integer> nodeIdToIntegerId) {
 		return nodes.stream()
 				.collect(Collectors.toMap(node -> nodeIdToIntegerId.get(node.getId()), Function.identity()));
 	}
 
-	private static Map<String, INode> buildNodeIdToNodeMap(List<INode> nodes) {
+	private static Map<Integer, INode> buildNodeIdToNodeMap(List<INode> nodes) {
 		return nodes.stream()
 				.collect(Collectors.toMap(INode::getId, Function.identity()));
 	}
@@ -59,7 +59,7 @@ public class GraphUtils {
 		return new SimpleMatrix(data);
 	}
 
-	private static SimpleMatrix constructAdjacencyMatrix(int n, Multimap<String, String> edges, Map<String, Integer> nodeIdToIntegerIds) {
+	private static SimpleMatrix constructAdjacencyMatrix(int n, Multimap<Integer, Integer> edges, Map<Integer, Integer> nodeIdToVertexNum) {
 
 		double[][] data = new double[n][n];
 		initializeMatrixToZero(data, n);
@@ -67,8 +67,8 @@ public class GraphUtils {
 				.flatMap(entry -> entry.getValue().stream()
 						.map(val -> Pair.create(entry.getKey(), val))
 						.map(pair -> Pair.create(
-								nodeIdToIntegerIds.get(pair.getKey()),
-								nodeIdToIntegerIds.get(pair.getValue())
+								nodeIdToVertexNum.get(pair.getKey()),
+								nodeIdToVertexNum.get(pair.getValue())
 						)))
 				.forEach(pair -> data[pair.getKey()][pair.getValue()] = 1);
 
@@ -83,8 +83,8 @@ public class GraphUtils {
 		}
 	}
 
-	private static Map<String, Integer> assignIntegerIdToNodes(List<INode> nodes) {
-		ImmutableMap.Builder<String, Integer> ids = ImmutableMap.builder();
+	private static Map<Integer, Integer> assignVertexNumToNodes(List<INode> nodes) {
+		ImmutableMap.Builder<Integer, Integer> ids = ImmutableMap.builder();
 
 		int count = 0;
 		for (var node : nodes) {

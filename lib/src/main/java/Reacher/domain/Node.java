@@ -2,14 +2,14 @@ package Reacher.domain;
 
 public class Node implements INode {
 
-	private String id;
+	private int id;
 
-	public Node(String id) {
+	public Node(int id) {
 		this.id = id;
 	}
 
 	@Override
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 }

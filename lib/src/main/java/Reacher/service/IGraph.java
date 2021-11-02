@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IGraph extends GraphMutationService {
-	Optional<INode> getNode(String nodeId);
-	List<INode> getAncestors(String nodeId);
-	List<INode> getDescendants(String nodeId);
-	boolean doesPathExist(String nodeAId, String nodeBId);
+	Optional<INode> getNode(int nodeId);
+	List<INode> getAncestors(int nodeId);
+	List<INode> getDescendants(int nodeId);
+	boolean doesPathExist(int nodeAId, int nodeBId);
 	List<INode> getNodes();
-	Multimap<String, String> getEdges();
+	Multimap<Integer, Integer> getEdges();
 }
