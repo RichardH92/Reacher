@@ -45,6 +45,9 @@ sourceSets {
     }
 }
 
+jmh {
+    jvmArgs = ['-XX:+FlightRecorder', '-XX:StartFlightRecording=duration=10m,filename=myrecording.jfr']
+}
 
 
 tasks.named('test') {

@@ -18,23 +18,26 @@ public class GraphBenchmarks {
 		Graph g;
 		Random random;
 
+		@Param({"1000", "5000", "10000"})
+		int numVertices;
+
 		@Setup(Level.Trial)
 		public void initialize() {
 			random = new Random();
-			g = generateRandomGraph(1000, 1000);
+			g = generateRandomGraph(numVertices, numVertices);
 		}
 	}
 
-	@Benchmark
+	/*@Benchmark
 	public void benchmarkDoesPathExist(BenchmarkState state) {
-		String from = Integer.toString(state.random.nextInt(1000));
-		String to = Integer.toString(state.random.nextInt(1000));
+		String from = Integer.toString(state.random.nextInt(3000));
+		String to = Integer.toString(state.random.nextInt(3000));
 
 		state.g.doesPathExist(from, to);
-	}
+	}*/
 
 	@Benchmark
 	public void benchmarkGetAncestors(BenchmarkState state) {
-		state.g.getAncestors(Integer.toString(state.random.nextInt(1000)));
+		state.g.getAncestors(Integer.toString(state.random.nextInt(state.numVertices)));
 	}
 }
