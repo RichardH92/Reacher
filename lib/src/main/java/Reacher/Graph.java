@@ -6,6 +6,7 @@ import Reacher.service.IGraph;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.HashMap;
@@ -25,8 +26,8 @@ public class Graph implements IGraph {
 	private final Map<Integer, INode> vertexNumToNode;
 	private final Map<Integer, INode> nodeIdToNode;
 	private final Map<Integer, Integer> nodeIdToVertexNum;
-	private final SimpleMatrix adjacencyMatrix;
-	private final SimpleMatrix reachabilityMatrix;
+	private final DMatrixSparseCSC adjacencyMatrix;
+	private final DMatrixSparseCSC reachabilityMatrix;
 	private final Set<Integer> unusedVertexNums;
 
 	public Graph(
@@ -34,8 +35,8 @@ public class Graph implements IGraph {
 			Map<Integer, INode> vertexNumToNode,
 			Map<Integer, Integer> nodeIdToVertexNum,
 			Map<Integer, INode> nodeIdToNode,
-			SimpleMatrix adjacencyMatrix,
-			SimpleMatrix reachabilityMatrix) {
+			DMatrixSparseCSC adjacencyMatrix,
+			DMatrixSparseCSC reachabilityMatrix) {
 
 		this.n = n;
 		this.vertexNumToNode = new HashMap<>(vertexNumToNode);
@@ -190,10 +191,16 @@ public class Graph implements IGraph {
 			int rowId = nodeIdToVertexNum.get(nodeId);
 			int colId = nodeIdToVertexNum.get(nodeId);
 
-			reachabilityMatrix.setColumn(colId, 0, 0);
-			reachabilityMatrix.setRow(rowId, 0, 0);
-			adjacencyMatrix.setColumn(colId, 0, 0);
-			adjacencyMatrix.setRow(rowId, 0, 0);
+			for (int i = 0; i < reachabilityMatrix.numRows; i++) {
+				reachabilityMatrix.set(i, colId, 0);
+				adjacencyMatrix.set(i, colId, 0);
+			}
+
+			for (int j = 0; j < reachabilityMatrix.numCols; j++) {
+				reachabilityMatrix.set(rowId, j, 0);
+				adjacencyMatrix.set(rowId, j, 0);
+			}
+
 			unusedVertexNums.add(rowId);
 			nodeIdToNode.remove(nodeId);
 			nodeIdToVertexNum.remove(nodeId);

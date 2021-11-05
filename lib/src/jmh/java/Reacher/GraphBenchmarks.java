@@ -18,7 +18,7 @@ public class GraphBenchmarks {
 		Graph g;
 		Random random;
 
-		@Param({"100000"})
+		@Param({"1000"})
 		int numVertices;
 
 		@Setup(Level.Trial)

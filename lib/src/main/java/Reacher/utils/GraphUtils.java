@@ -2,11 +2,14 @@ package Reacher.utils;
 
 import Reacher.Graph;
 import Reacher.domain.INode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.math3.util.Pair;
-import org.ejml.data.MatrixType;
-import org.ejml.simple.SimpleMatrix;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.ops.DConvertMatrixStruct;
 
 import java.util.List;
 import java.util.Map;
@@ -20,9 +23,9 @@ public class GraphUtils {
 		Map<Integer, INode> nodeIdToNodeMap = buildNodeIdToNodeMap(nodes);
 		Map<Integer, Integer> nodeIdToIntegerIds = assignVertexNumToNodes(nodes);
 		Map<Integer, INode> integerIdToNodeMap = buildIntegerIdToNodeMap(nodes, nodeIdToIntegerIds);
-		SimpleMatrix adjacencyMatrix = constructAdjacencyMatrix(n, edges, nodeIdToIntegerIds);
-		SimpleMatrix identityMatrix = buildIdentityMatrix(n);
-		SimpleMatrix reachabilityMatrix = constructReachabilityMatrix(adjacencyMatrix, identityMatrix);
+		DMatrixSparseCSC adjacencyMatrix = ((MatrixWrapper) constructAdjacencyMatrix(n, edges, nodeIdToIntegerIds)).matrix;
+		DMatrixSparseCSC identityMatrix = ((MatrixWrapper) buildIdentityMatrix(n)).matrix;
+		DMatrixSparseCSC reachabilityMatrix = ((MatrixWrapper) constructReachabilityMatrix(adjacencyMatrix, identityMatrix)).matrix;
 
 		return new Graph(n, integerIdToNodeMap, nodeIdToIntegerIds, nodeIdToNodeMap, adjacencyMatrix, reachabilityMatrix);
 	}
@@ -37,15 +40,28 @@ public class GraphUtils {
 				.collect(Collectors.toMap(INode::getId, Function.identity()));
 	}
 
-	private static SimpleMatrix constructReachabilityMatrix(SimpleMatrix adjacencyMatrix, SimpleMatrix identityMatrix) {
-		return identityMatrix.mult(identityMatrix
-					.minus(adjacencyMatrix)
-					.invert())
-				.minus(identityMatrix);
+	@VisibleForTesting
+	static Matrix constructReachabilityMatrix(DMatrixSparseCSC adjacencyMatrix, DMatrixSparseCSC identityMatrix) {
+
+
+		DMatrixRMaj a = DConvertMatrixStruct.convert(adjacencyMatrix, (DMatrixRMaj) null);
+		DMatrixRMaj i = DConvertMatrixStruct.convert(identityMatrix, (DMatrixRMaj) null);
+
+		DMatrixRMaj iMinusA = new DMatrixRMaj(a.numRows, a.numCols);
+		CommonOps_DDRM.subtract(i, a, iMinusA);
+		CommonOps_DDRM.invert(iMinusA);
+
+		DMatrixRMaj result = new DMatrixRMaj(a.numRows, a.numCols);
+		CommonOps_DDRM.mult(i, iMinusA, result);
+
+		DMatrixSparseCSC ret = DConvertMatrixStruct.convert(result, (DMatrixSparseCSC) null, 0);
+
+		return new MatrixWrapper(ret);
 	}
 
-	private static SimpleMatrix buildIdentityMatrix(int n) {
-		var matrix = new SimpleMatrix(n, n);
+	@VisibleForTesting
+	static Matrix buildIdentityMatrix(int n) {
+		var matrix = new DMatrixSparseCSC(n, n, 2 * n);
 
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
@@ -57,13 +73,13 @@ public class GraphUtils {
 			}
 		}
 
-		return matrix;
+		return new MatrixWrapper(matrix);
 	}
 
-	private static SimpleMatrix constructAdjacencyMatrix(int n, Multimap<Integer, Integer> edges, Map<Integer, Integer> nodeIdToVertexNum) {
+	@VisibleForTesting
+	static Matrix constructAdjacencyMatrix(int n, Multimap<Integer, Integer> edges, Map<Integer, Integer> nodeIdToVertexNum) {
 
-		var matrix = new SimpleMatrix(n, n);
-		matrix.fill(0);
+		var matrix = new DMatrixSparseCSC(n, n, 2 * n);
 
 		edges.asMap().entrySet().stream()
 				.flatMap(entry -> entry.getValue().stream()
@@ -74,7 +90,7 @@ public class GraphUtils {
 						)))
 				.forEach(pair -> matrix.set(pair.getKey(), pair.getValue(), 1));
 
-		return matrix;
+		return new MatrixWrapper(matrix);
 	}
 
 	private static Map<Integer, Integer> assignVertexNumToNodes(List<INode> nodes) {
@@ -87,5 +103,24 @@ public class GraphUtils {
 		}
 
 		return ids.build();
+	}
+
+	private static class MatrixWrapper implements Matrix {
+
+		private DMatrixSparseCSC matrix;
+
+		private MatrixWrapper(DMatrixSparseCSC matrix) {
+			this.matrix = matrix;
+		}
+
+		@Override
+		public int get(int row, int col) {
+			return (int) matrix.get(row, col);
+		}
+
+		@Override
+		public void set(int row, int col, int value) {
+			matrix.set(row, col, value);
+		}
 	}
 }
