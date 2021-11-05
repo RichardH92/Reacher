@@ -47,16 +47,15 @@ public class GraphUtils {
 		DMatrixRMaj a = DConvertMatrixStruct.convert(adjacencyMatrix, (DMatrixRMaj) null);
 		DMatrixRMaj i = DConvertMatrixStruct.convert(identityMatrix, (DMatrixRMaj) null);
 
-		DMatrixRMaj iMinusA = new DMatrixRMaj(a.numRows, a.numCols);
-		CommonOps_DDRM.subtract(i, a, iMinusA);
-		CommonOps_DDRM.invert(iMinusA);
+		DMatrixRMaj iMinusA = CommonOps_DDRM.subtract(i, a, null);
 
-		DMatrixRMaj result = new DMatrixRMaj(a.numRows, a.numCols);
-		CommonOps_DDRM.mult(i, iMinusA, result);
+		DMatrixRMaj inverted = new DMatrixRMaj(a.numRows, a.numCols);
+		CommonOps_DDRM.invert(iMinusA, inverted);
 
-		DMatrixSparseCSC ret = DConvertMatrixStruct.convert(result, (DMatrixSparseCSC) null, 0);
+		DMatrixRMaj left = CommonOps_DDRM.mult(i, inverted, null);
+		DMatrixRMaj ret = CommonOps_DDRM.subtract(left, i, null);
 
-		return new MatrixWrapper(ret);
+		return new MatrixWrapper(DConvertMatrixStruct.convert(ret, (DMatrixSparseCSC) null, 0));
 	}
 
 	@VisibleForTesting
@@ -105,9 +104,11 @@ public class GraphUtils {
 		return ids.build();
 	}
 
-	private static class MatrixWrapper implements Matrix {
+	@VisibleForTesting
+	static class MatrixWrapper implements Matrix {
 
-		private DMatrixSparseCSC matrix;
+		@VisibleForTesting
+		DMatrixSparseCSC matrix;
 
 		private MatrixWrapper(DMatrixSparseCSC matrix) {
 			this.matrix = matrix;
