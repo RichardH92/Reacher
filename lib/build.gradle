@@ -48,7 +48,8 @@ sourceSets {
 }
 
 jmh {
-    jvmArgs = ['-XX:+FlightRecorder', '-XX:StartFlightRecording=duration=10m,filename=myrecording.jfr']
+    jvmArgs = ['-Xmx16G']
+    // jvmArgs = ['-XX:+FlightRecorder', '-XX:StartFlightRecording=duration=10m,filename=myrecording.jfr']
 }
 
 

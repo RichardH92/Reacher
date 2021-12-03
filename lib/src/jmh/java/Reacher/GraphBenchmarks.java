@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import static Reacher.utils.BenchmarkUtils.generateRandomGraph;
 
-@BenchmarkMode(Mode.SampleTime)
+@BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(1)
 public class GraphBenchmarks {
@@ -18,7 +18,7 @@ public class GraphBenchmarks {
 		Graph g;
 		Random random;
 
-		@Param({"1000"})
+		@Param({"100000"})
 		int numVertices;
 
 		@Setup(Level.Trial)

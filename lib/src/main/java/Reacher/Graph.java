@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.ejml.data.DMatrixSparseCSC;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +50,52 @@ public class Graph implements IGraph {
 	@Override
 	public Optional<INode> getNode(int nodeId) {
 		return Optional.ofNullable(nodeIdToNode.get(nodeId));
+	}
+
+	@Override
+	public List<INode> getChildren(int nodeId) {
+		readWriteLock.readLock().lock();
+		try {
+			assertNodeExists(nodeId);
+
+			int rowId = nodeIdToVertexNum.get(nodeId);
+
+			var nodeListBuilder = ImmutableList.<INode>builder();
+
+			for (int i = 0; i < n; i++) {
+				if (adjacencyMatrix.get(rowId, i) > 0) {
+					INode node = vertexNumToNode.get(i);
+					nodeListBuilder.add(node);
+				}
+			}
+
+			return nodeListBuilder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public List<INode> getParents(int nodeId) {
+		readWriteLock.readLock().lock();
+		try {
+			assertNodeExists(nodeId);
+
+			int colId = nodeIdToVertexNum.get(nodeId);
+
+			var nodeListBuilder = ImmutableList.<INode>builder();
+
+			for (int i = 0; i < n; i++) {
+				if (adjacencyMatrix.get(i, colId) > 0) {
+					INode node = vertexNumToNode.get(i);
+					nodeListBuilder.add(node);
+				}
+			}
+
+			return nodeListBuilder.build();
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	@Override
